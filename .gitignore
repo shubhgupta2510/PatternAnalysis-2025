@@ -1,0 +1,10 @@
+# Ignore all files in the keras_slices_data directory
+keras_slices_data/*
+
+# Except for the .gitkeep file
+!keras_slices_data/.gitkeep
+
+# Ignore DS_Store files
+.DS_Store
+__pycache__/
+
