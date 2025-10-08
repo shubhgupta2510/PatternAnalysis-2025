@@ -1,5 +1,10 @@
 # Ignore all files in the keras_slices_data directory
-keras_slices_data/*
+recognition/VQVAE_HipMRI_Study_Shubh_Gupta_s47019070/keras_slices_data/keras_slices_seg_test
+recognition/VQVAE_HipMRI_Study_Shubh_Gupta_s47019070/keras_slices_data/keras_slices_seg_train
+recognition/VQVAE_HipMRI_Study_Shubh_Gupta_s47019070/keras_slices_data/keras_slices_seg_validate
+recognition/VQVAE_HipMRI_Study_Shubh_Gupta_s47019070/keras_slices_data/keras_slices_test
+recognition/VQVAE_HipMRI_Study_Shubh_Gupta_s47019070/keras_slices_data/keras_slices_train
+recognition/VQVAE_HipMRI_Study_Shubh_Gupta_s47019070/keras_slices_data/keras_slices_validate
 
 # Except for the .gitkeep file
 !keras_slices_data/.gitkeep
