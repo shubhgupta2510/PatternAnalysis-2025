@@ -113,3 +113,36 @@ class ResidualBlock(layers.Layer):
         x = self.conv1(inputs)
         x = self.conv2(x)
         return self.activation(x + inputs)
+    
+class Encoder(layers.Layer):
+    """
+    Encoder network for VQ-VAE.
+    Downsamples input images to latent representation.
+    """
+    
+    def __init__(self, latent_dim=64, num_residual_blocks=2, **kwargs):
+        super(Encoder, self).__init__(**kwargs)
+        self.latent_dim = latent_dim
+        
+        # Downsampling layers with simpler architecture
+        self.conv1 = layers.Conv2D(32, 4, strides=2, padding='same', 
+                                   kernel_initializer='he_normal', activation='relu')
+        self.conv2 = layers.Conv2D(64, 4, strides=2, padding='same',
+                                   kernel_initializer='he_normal', activation='relu')
+        self.conv3 = layers.Conv2D(latent_dim, 3, padding='same',
+                                   kernel_initializer='he_normal')
+        
+        # Residual blocks
+        self.residual_blocks = [
+            ResidualBlock(latent_dim) for _ in range(num_residual_blocks)
+        ]
+        
+    def call(self, inputs, training=None):
+        x = self.conv1(inputs)
+        x = self.conv2(x)
+        x = self.conv3(x)  # No activation here - let VQ layer handle it
+        
+        for residual_block in self.residual_blocks:
+            x = residual_block(x)
+            
+        return x
