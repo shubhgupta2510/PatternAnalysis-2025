@@ -251,3 +251,28 @@ class HipMRIDataLoader:
         
         indices = np.random.choice(len(images), min(num_samples, len(images)), replace=False)
         return images[indices]
+
+def get_data_statistics(data_dir):
+    """
+    Calculate statistics about the dataset.
+    
+    Args:
+        data_dir: Directory containing .nii.gz files
+        
+    Returns:
+        Dictionary with dataset statistics
+    """
+    files = glob.glob(os.path.join(data_dir, "*.nii.gz"))
+    
+    if len(files) == 0:
+        return {"num_files": 0}
+    
+    # Load a sample to get image dimensions
+    sample_img = load_nifti_slice(files[0])
+    
+    stats = {
+        "num_files": len(files),
+        "original_shape": sample_img.shape if sample_img is not None else None,
+    }
+    
+    return stats
