@@ -310,3 +310,32 @@ def generate_random_samples(model, num_samples=16, latent_shape=(32, 32, 64)):
     generated = model.decoder(quantized)
     
     return generated.numpy()
+
+
+def plot_generated_samples(generated_images, save_path=None):
+    """
+    Plot generated samples.
+    
+    Args:
+        generated_images: Array of generated images
+        save_path: Path to save the plot
+    """
+    num_images = min(16, len(generated_images))
+    grid_size = int(np.sqrt(num_images))
+    
+    fig, axes = plt.subplots(grid_size, grid_size, figsize=(10, 10))
+    axes = axes.flatten()
+    
+    for i in range(num_images):
+        axes[i].imshow(generated_images[i].squeeze(), cmap='gray')
+        axes[i].axis('off')
+    
+    plt.suptitle('Generated Samples from VQ-VAE', fontsize=16, fontweight='bold')
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Generated samples plot saved to: {save_path}")
+    
+    plt.show()
+    plt.close()
