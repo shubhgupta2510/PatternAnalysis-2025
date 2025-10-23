@@ -225,3 +225,69 @@ class VQVAE(keras.Model):
         reconstructed = self.decoder(quantized, training=training)
         return reconstructed
     
+    @property
+    def metrics(self):
+        return [
+            self.total_loss_tracker,
+            self.reconstruction_loss_tracker,
+            self.vq_loss_tracker,
+        ]
+    
+    def train_step(self, data):
+        """Custom training step."""
+        with tf.GradientTape() as tape:
+            # Forward pass
+            encoded = self.encoder(data, training=True)
+            quantized = self.vq_layer(encoded)
+            reconstructed = self.decoder(quantized, training=True)
+            
+            # Reconstruction loss - MSE only
+            reconstruction_loss = tf.reduce_mean((data - reconstructed) ** 2)
+            
+            # VQ losses from vq_layer
+            vq_loss = tf.add_n(self.vq_layer.losses) if len(self.vq_layer.losses) > 0 else 0.0
+            
+            # Total loss
+            total_loss = reconstruction_loss + vq_loss
+        
+        # Backpropagation
+        grads = tape.gradient(total_loss, self.trainable_variables)
+        self.optimizer.apply_gradients(zip(grads, self.trainable_variables))
+        
+        # Update metrics
+        self.total_loss_tracker.update_state(total_loss)
+        self.reconstruction_loss_tracker.update_state(reconstruction_loss)
+        self.vq_loss_tracker.update_state(vq_loss)
+        
+        return {
+            "total_loss": self.total_loss_tracker.result(),
+            "reconstruction_loss": self.reconstruction_loss_tracker.result(),
+            "vq_loss": self.vq_loss_tracker.result(),
+        }
+    
+    def test_step(self, data):
+        """Custom validation/test step."""
+        # Forward pass
+        encoded = self.encoder(data, training=False)
+        quantized = self.vq_layer(encoded)
+        reconstructed = self.decoder(quantized, training=False)
+        
+        # Calculate losses
+        reconstruction_loss = tf.reduce_mean((data - reconstructed) ** 2)
+        
+        # VQ losses from vq_layer
+        vq_loss = tf.add_n(self.vq_layer.losses) if len(self.vq_layer.losses) > 0 else 0.0
+        
+        # Total loss
+        total_loss = reconstruction_loss + vq_loss
+        
+        # Update metrics
+        self.total_loss_tracker.update_state(total_loss)
+        self.reconstruction_loss_tracker.update_state(reconstruction_loss)
+        self.vq_loss_tracker.update_state(vq_loss)
+        
+        return {
+            "total_loss": self.total_loss_tracker.result(),
+            "reconstruction_loss": self.reconstruction_loss_tracker.result(),
+            "vq_loss": self.vq_loss_tracker.result(),
+        }
