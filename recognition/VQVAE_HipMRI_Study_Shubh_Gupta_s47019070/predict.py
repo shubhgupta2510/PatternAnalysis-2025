@@ -202,3 +202,57 @@ def demonstrate_codebook_analysis(model, test_dataset, save_dir='results'):
     save_path = save_dir / "codebook_usage.png"
     plot_codebook_usage(model, test_dataset, str(save_path))
 
+
+def demonstrate_interpolation(model, test_images, save_dir='results'):
+    """
+    Demonstrate interpolation between two images.
+    
+    Args:
+        model: Trained VQ-VAE model
+        test_images: Test images
+        save_dir: Directory to save results
+    """
+    save_dir = Path(save_dir)
+    save_dir.mkdir(exist_ok=True)
+    
+    print("\n" + "=" * 80)
+    print("Demonstrating Latent Space Interpolation")
+    print("=" * 80)
+    
+    # Select two random images
+    idx1, idx2 = 0, 7
+    img1 = test_images[idx1:idx1+1]
+    img2 = test_images[idx2:idx2+1]
+    
+    # Encode both images
+    latent1 = model.encode(img1)
+    latent2 = model.encode(img2)
+    
+    # Create interpolation
+    num_steps = 8
+    interpolations = []
+    
+    for alpha in np.linspace(0, 1, num_steps):
+        # Linear interpolation in latent space
+        interpolated_latent = (1 - alpha) * latent1 + alpha * latent2
+        
+        # Decode
+        decoded = model.decode(interpolated_latent)
+        interpolations.append(decoded[0])
+    
+    # Plot
+    fig, axes = plt.subplots(1, num_steps, figsize=(2.5 * num_steps, 3))
+    
+    for i, (ax, img) in enumerate(zip(axes, interpolations)):
+        ax.imshow(img.squeeze(), cmap='gray')
+        ax.axis('off')
+        ax.set_title(f'α={i/(num_steps-1):.2f}', fontsize=10)
+    
+    plt.suptitle('Latent Space Interpolation', fontsize=14, fontweight='bold')
+    plt.tight_layout()
+    
+    save_path = save_dir / "interpolation.png"
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    print(f"Interpolation plot saved to: {save_path}")
+    plt.show()
+    plt.close()
