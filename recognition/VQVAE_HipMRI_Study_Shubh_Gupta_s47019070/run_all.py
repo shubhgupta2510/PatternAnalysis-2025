@@ -96,3 +96,20 @@ def run_test_setup():
     """Run setup verification."""
     print_step(2, 6, "Running Setup Verification")
     return run_command("Setup verification", ["test_setup.py"], python_script=True)
+
+def train_model(quick_mode=False):
+    """Train the VQ-VAE model."""
+    print_step(3, 6, "Training VQ-VAE Model")
+    
+    if quick_mode:
+        print("Quick mode enabled - training will use reduced epochs")
+        print("   (Modify train.py config to set epochs=10 for quick testing)")
+    
+    print(" This may take 2-4 hours on CPU...")
+    print("   The model will automatically:")
+    print("   - Train for up to 100 epochs")
+    print("   - Save the best model based on validation loss")
+    print("   - Stop early if no improvement for 15 epochs")
+    print("")
+    
+    return run_command("Model training", ["train.py"], python_script=True)
