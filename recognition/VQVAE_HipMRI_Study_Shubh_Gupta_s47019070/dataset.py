@@ -137,3 +137,34 @@ def create_tf_dataset(images, batch_size=32, shuffle=True, buffer_size=1000):
     dataset = dataset.prefetch(tf.data.AUTOTUNE)
     
     return dataset
+
+class HipMRIDataLoader:
+    """
+    Main data loader class for HipMRI dataset.
+    Handles loading train, validation, and test splits.
+    """
+    
+    def __init__(self, base_dir, target_size=(128, 128), batch_size=32):
+        """
+        Args:
+            base_dir: Base directory containing keras_slices_data folder
+            target_size: Target size for images
+            batch_size: Batch size for datasets
+        """
+        self.base_dir = Path(base_dir)
+        self.target_size = target_size
+        self.batch_size = batch_size
+        
+        # Define data directories
+        self.train_dir = self.base_dir / "keras_slices_train"
+        self.val_dir = self.base_dir / "keras_slices_validate"
+        self.test_dir = self.base_dir / "keras_slices_test"
+        
+        # Check if directories exist
+        for dir_path in [self.train_dir, self.val_dir, self.test_dir]:
+            if not dir_path.exists():
+                raise ValueError(f"Directory not found: {dir_path}")
+        
+        self.train_images = None
+        self.val_images = None
+        self.test_images = None
