@@ -225,3 +225,20 @@ def plot_codebook_usage(model, dataset, save_path=None):
     
     plt.show()
     plt.close()
+
+def save_model_config(config, save_path):
+    """
+    Save model configuration to a text file.
+    
+    Args:
+        config: Dictionary of configuration parameters
+        save_path: Path to save the configuration
+    """
+    with open(save_path, 'w') as f:
+        f.write("VQ-VAE Model Configuration\n")
+        f.write("=" * 50 + "\n\n")
+        for key, value in config.items():
+            f.write(f"{key}: {value}\n")
+    
+    print(f"Configuration saved to: {save_path}")
+
