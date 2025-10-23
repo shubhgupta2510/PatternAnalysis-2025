@@ -130,3 +130,36 @@ def evaluate_model_performance(model, test_dataset, num_batches=10):
     print("=" * 80)
     
     return metrics
+
+def demonstrate_reconstruction(model, test_images, save_dir='results'):
+    """
+    Demonstrate image reconstruction capabilities.
+    
+    Args:
+        model: Trained VQ-VAE model
+        test_images: Test images
+        save_dir: Directory to save results
+    """
+    save_dir = Path(save_dir)
+    save_dir.mkdir(exist_ok=True)
+    
+    print("\n" + "=" * 80)
+    print("Demonstrating Image Reconstruction")
+    print("=" * 80)
+    
+    # Reconstruct images
+    reconstructions = model.predict(test_images, verbose=0)
+    
+    # Calculate SSIM for each image
+    ssim_scores = calculate_ssim(test_images, reconstructions)
+    
+    # Plot reconstructions
+    save_path = save_dir / "reconstruction_examples.png"
+    plot_reconstructions(model, test_images, str(save_path), num_images=8)
+    
+    # Print individual SSIM scores
+    print("\nIndividual SSIM Scores:")
+    print("-" * 80)
+    for i, score in enumerate(ssim_scores[:8]):
+        print(f"Image {i+1}: SSIM = {score:.4f}")
+    print("-" * 80)
