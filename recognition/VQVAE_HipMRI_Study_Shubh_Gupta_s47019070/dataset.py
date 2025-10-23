@@ -197,3 +197,36 @@ class HipMRIDataLoader:
         print(f"Training samples: {len(self.train_images)}")
         print(f"Validation samples: {len(self.val_images)}")
         print(f"Test samples: {len(self.test_images)}")
+        
+    def get_datasets(self, shuffle_train=True):
+        """
+        Get TensorFlow datasets for training, validation, and testing.
+        
+        Args:
+            shuffle_train: Whether to shuffle training data
+            
+        Returns:
+            Tuple of (train_dataset, val_dataset, test_dataset)
+        """
+        if self.train_images is None:
+            raise ValueError("Data not loaded. Call load_data() first.")
+        
+        train_dataset = create_tf_dataset(
+            self.train_images, 
+            self.batch_size, 
+            shuffle=shuffle_train
+        )
+        
+        val_dataset = create_tf_dataset(
+            self.val_images, 
+            self.batch_size, 
+            shuffle=False
+        )
+        
+        test_dataset = create_tf_dataset(
+            self.test_images, 
+            self.batch_size, 
+            shuffle=False
+        )
+        
+        return train_dataset, val_dataset, test_dataset
