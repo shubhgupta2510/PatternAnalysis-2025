@@ -183,3 +183,45 @@ class Decoder(layers.Layer):
         x = self.conv_out(x)
         
         return x
+
+
+class VQVAE(keras.Model):
+    """
+    Complete VQ-VAE model combining encoder, vector quantizer, and decoder.
+    """
+    
+    def __init__(self, 
+                 latent_dim=64,
+                 num_embeddings=512,
+                 num_residual_blocks=2,
+                 commitment_cost=0.25,
+                 **kwargs):
+        """
+        Args:
+            latent_dim: Dimension of latent space
+            num_embeddings: Size of codebook
+            num_residual_blocks: Number of residual blocks in encoder/decoder
+            commitment_cost: Weight for commitment loss
+        """
+        super(VQVAE, self).__init__(**kwargs)
+        
+        self.latent_dim = latent_dim
+        self.num_embeddings = num_embeddings
+        
+        # Build model components
+        self.encoder = Encoder(latent_dim, num_residual_blocks)
+        self.vq_layer = VectorQuantizer(num_embeddings, latent_dim, commitment_cost)
+        self.decoder = Decoder(num_residual_blocks)
+        
+        # Metrics
+        self.total_loss_tracker = keras.metrics.Mean(name="total_loss")
+        self.reconstruction_loss_tracker = keras.metrics.Mean(name="reconstruction_loss")
+        self.vq_loss_tracker = keras.metrics.Mean(name="vq_loss")
+        
+    def call(self, inputs, training=None):
+        """Forward pass through VQ-VAE."""
+        encoded = self.encoder(inputs, training=training)
+        quantized = self.vq_layer(encoded)
+        reconstructed = self.decoder(quantized, training=training)
+        return reconstructed
+    
