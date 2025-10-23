@@ -182,3 +182,23 @@ def demonstrate_latent_space(model, test_images, save_dir='results'):
     
     save_path = save_dir / "latent_space_visualization.png"
     plot_latent_space_visualization(model, test_images, str(save_path))
+
+def demonstrate_codebook_analysis(model, test_dataset, save_dir='results'):
+    """
+    Analyze codebook usage.
+    
+    Args:
+        model: Trained VQ-VAE model
+        test_dataset: Test dataset
+        save_dir: Directory to save results
+    """
+    save_dir = Path(save_dir)
+    save_dir.mkdir(exist_ok=True)
+    
+    print("\n" + "=" * 80)
+    print("Analyzing Codebook Usage")
+    print("=" * 80)
+    
+    save_path = save_dir / "codebook_usage.png"
+    plot_codebook_usage(model, test_dataset, str(save_path))
+
