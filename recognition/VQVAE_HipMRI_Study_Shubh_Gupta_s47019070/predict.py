@@ -256,3 +256,33 @@ def demonstrate_interpolation(model, test_images, save_dir='results'):
     print(f"Interpolation plot saved to: {save_path}")
     plt.show()
     plt.close()
+
+def create_ssim_histogram(ssim_scores, save_dir='results'):
+    """
+    Create histogram of SSIM scores.
+    
+    Args:
+        ssim_scores: List of SSIM scores
+        save_dir: Directory to save results
+    """
+    save_dir = Path(save_dir)
+    save_dir.mkdir(exist_ok=True)
+    
+    plt.figure(figsize=(10, 6))
+    plt.hist(ssim_scores, bins=30, edgecolor='black', alpha=0.7)
+    plt.axvline(x=0.6, color='r', linestyle='--', linewidth=2, label='Threshold (0.6)')
+    plt.axvline(x=np.mean(ssim_scores), color='g', linestyle='--', linewidth=2, 
+                label=f'Mean ({np.mean(ssim_scores):.3f})')
+    
+    plt.xlabel('SSIM Score', fontsize=12)
+    plt.ylabel('Frequency', fontsize=12)
+    plt.title('Distribution of SSIM Scores', fontsize=14, fontweight='bold')
+    plt.legend(fontsize=10)
+    plt.grid(True, alpha=0.3)
+    
+    save_path = save_dir / "ssim_histogram.png"
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    print(f"SSIM histogram saved to: {save_path}")
+    plt.show()
+    plt.close()
+
