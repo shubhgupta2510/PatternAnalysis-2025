@@ -290,4 +290,18 @@ class VQVAE(keras.Model):
             "total_loss": self.total_loss_tracker.result(),
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
             "vq_loss": self.vq_loss_tracker.result(),
-        }
+        }    
+    
+    def encode(self, inputs):
+        """Encode inputs to quantized latent codes."""
+        encoded = self.encoder(inputs)
+        quantized = self.vq_layer(encoded)
+        return quantized
+    
+    def decode(self, quantized):
+        """Decode quantized latents to images."""
+        return self.decoder(quantized)
+    
+    def reconstruct(self, inputs):
+        """Full reconstruction pipeline."""
+        return self.call(inputs)
