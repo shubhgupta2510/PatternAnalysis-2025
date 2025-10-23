@@ -286,3 +286,27 @@ def compare_models(models_dict, test_images, save_path=None):
     
     plt.show()
     plt.close()
+
+
+def generate_random_samples(model, num_samples=16, latent_shape=(32, 32, 64)):
+    """
+    Generate random samples by decoding random latent codes.
+    
+    Args:
+        model: Trained VQ-VAE model
+        num_samples: Number of samples to generate
+        latent_shape: Shape of latent space
+        
+    Returns:
+        Generated images
+    """
+    # Sample random latent codes
+    random_latents = tf.random.normal((num_samples,) + latent_shape)
+    
+    # Quantize
+    quantized = model.vq_layer(random_latents)
+    
+    # Decode
+    generated = model.decoder(quantized)
+    
+    return generated.numpy()
