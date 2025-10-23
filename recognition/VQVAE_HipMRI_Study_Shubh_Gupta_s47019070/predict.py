@@ -163,3 +163,22 @@ def demonstrate_reconstruction(model, test_images, save_dir='results'):
     for i, score in enumerate(ssim_scores[:8]):
         print(f"Image {i+1}: SSIM = {score:.4f}")
     print("-" * 80)
+
+def demonstrate_latent_space(model, test_images, save_dir='results'):
+    """
+    Visualize latent space representations.
+    
+    Args:
+        model: Trained VQ-VAE model
+        test_images: Test images
+        save_dir: Directory to save results
+    """
+    save_dir = Path(save_dir)
+    save_dir.mkdir(exist_ok=True)
+    
+    print("\n" + "=" * 80)
+    print("Visualizing Latent Space")
+    print("=" * 80)
+    
+    save_path = save_dir / "latent_space_visualization.png"
+    plot_latent_space_visualization(model, test_images, str(save_path))
