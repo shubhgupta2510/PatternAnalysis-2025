@@ -84,3 +84,51 @@ def plot_training_history(history, save_path=None):
     plt.show()
     plt.close()
 
+
+def plot_reconstructions(model, images, save_path=None, num_images=8):
+    """
+    Plot original images and their reconstructions.
+    
+    Args:
+        model: Trained VQ-VAE model
+        images: Original images
+        save_path: Path to save the plot
+        num_images: Number of images to plot
+    """
+    num_images = min(num_images, len(images))
+    
+    # Get reconstructions
+    reconstructions = model.predict(images[:num_images], verbose=0)
+    
+    # Calculate SSIM for each pair
+    ssim_scores = calculate_ssim(images[:num_images], reconstructions)
+    
+    # Create figure
+    fig, axes = plt.subplots(2, num_images, figsize=(2.5 * num_images, 5))
+    
+    for i in range(num_images):
+        # Original
+        axes[0, i].imshow(images[i].squeeze(), cmap='gray')
+        axes[0, i].axis('off')
+        if i == 0:
+            axes[0, i].set_title('Original', fontsize=12, fontweight='bold')
+        
+        # Reconstruction
+        axes[1, i].imshow(reconstructions[i].squeeze(), cmap='gray')
+        axes[1, i].axis('off')
+        if i == 0:
+            axes[1, i].set_title(f'Reconstruction\nSSIM: {ssim_scores[i]:.3f}', 
+                               fontsize=12, fontweight='bold')
+        else:
+            axes[1, i].set_title(f'SSIM: {ssim_scores[i]:.3f}', fontsize=10)
+    
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Reconstruction plot saved to: {save_path}")
+    
+    plt.show()
+    plt.close()
+    
+    return ssim_scores
