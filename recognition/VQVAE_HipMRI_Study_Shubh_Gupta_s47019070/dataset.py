@@ -115,3 +115,25 @@ def load_dataset_from_directory(data_dir, target_size=(128, 128), max_files=None
     
     return np.array(images)
 
+def create_tf_dataset(images, batch_size=32, shuffle=True, buffer_size=1000):
+    """
+    Create a TensorFlow dataset from image arrays.
+    
+    Args:
+        images: Numpy array of images
+        batch_size: Batch size for training
+        shuffle: Whether to shuffle the dataset
+        buffer_size: Buffer size for shuffling
+        
+    Returns:
+        tf.data.Dataset object
+    """
+    dataset = tf.data.Dataset.from_tensor_slices(images)
+    
+    if shuffle:
+        dataset = dataset.shuffle(buffer_size=buffer_size)
+    
+    dataset = dataset.batch(batch_size)
+    dataset = dataset.prefetch(tf.data.AUTOTUNE)
+    
+    return dataset
