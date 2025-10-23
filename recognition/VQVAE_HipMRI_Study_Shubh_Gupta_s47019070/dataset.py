@@ -168,3 +168,32 @@ class HipMRIDataLoader:
         self.train_images = None
         self.val_images = None
         self.test_images = None
+        
+    def load_data(self, max_train=None, max_val=None, max_test=None):
+        """
+        Load all datasets.
+        
+        Args:
+            max_train: Max training images to load
+            max_val: Max validation images to load
+            max_test: Max test images to load
+        """
+        print("Loading training data...")
+        self.train_images = load_dataset_from_directory(
+            str(self.train_dir), self.target_size, max_train
+        )
+        
+        print("Loading validation data...")
+        self.val_images = load_dataset_from_directory(
+            str(self.val_dir), self.target_size, max_val
+        )
+        
+        print("Loading test data...")
+        self.test_images = load_dataset_from_directory(
+            str(self.test_dir), self.target_size, max_test
+        )
+        
+        print(f"\nDataset loaded successfully!")
+        print(f"Training samples: {len(self.train_images)}")
+        print(f"Validation samples: {len(self.val_images)}")
+        print(f"Test samples: {len(self.test_images)}")
