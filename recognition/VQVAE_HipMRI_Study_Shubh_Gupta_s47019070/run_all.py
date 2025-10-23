@@ -91,3 +91,8 @@ def check_setup():
             print(f"    - {subdir}: {num_files} files")
     
     return True
+
+def run_test_setup():
+    """Run setup verification."""
+    print_step(2, 6, "Running Setup Verification")
+    return run_command("Setup verification", ["test_setup.py"], python_script=True)
