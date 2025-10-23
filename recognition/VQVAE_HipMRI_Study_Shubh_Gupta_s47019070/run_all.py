@@ -126,3 +126,8 @@ def run_predictions():
     print("")
     
     return run_command("Prediction and evaluation", ["predict.py"], python_script=True)
+
+def create_diagrams():
+    """Create architecture diagrams."""
+    print_step(5, 6, "Creating Architecture Diagrams")
+    return run_command("Diagram generation", ["create_diagrams.py"], python_script=True)
