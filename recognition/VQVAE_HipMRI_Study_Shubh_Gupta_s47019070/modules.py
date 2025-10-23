@@ -305,3 +305,34 @@ class VQVAE(keras.Model):
     def reconstruct(self, inputs):
         """Full reconstruction pipeline."""
         return self.call(inputs)
+    
+def build_vqvae(input_shape=(128, 128, 1),
+                latent_dim=64,
+                num_embeddings=512,
+                num_residual_blocks=2,
+                commitment_cost=0.25):
+    """
+    Build and return a VQ-VAE model.
+    
+    Args:
+        input_shape: Shape of input images
+        latent_dim: Dimension of latent space
+        num_embeddings: Size of codebook
+        num_residual_blocks: Number of residual blocks
+        commitment_cost: Weight for commitment loss
+        
+    Returns:
+        VQVAE model instance
+    """
+    model = VQVAE(
+        latent_dim=latent_dim,
+        num_embeddings=num_embeddings,
+        num_residual_blocks=num_residual_blocks,
+        commitment_cost=commitment_cost
+    )
+    
+    # Build model by calling it once
+    dummy_input = tf.random.normal((1,) + input_shape)
+    _ = model(dummy_input)
+    
+    return model
