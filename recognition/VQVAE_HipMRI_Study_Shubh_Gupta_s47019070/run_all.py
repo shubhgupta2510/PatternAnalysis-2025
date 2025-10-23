@@ -19,3 +19,10 @@ def print_header(text):
     print("\n" + "=" * 80)
     print(text.center(80))
     print("=" * 80 + "\n")
+    
+    
+def print_step(step_num, total_steps, description):
+    """Print step information."""
+    print(f"\n{'─' * 80}")
+    print(f"STEP {step_num}/{total_steps}: {description}")
+    print(f"{'─' * 80}\n")
