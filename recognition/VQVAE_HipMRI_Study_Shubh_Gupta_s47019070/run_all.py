@@ -131,3 +131,50 @@ def create_diagrams():
     """Create architecture diagrams."""
     print_step(5, 6, "Creating Architecture Diagrams")
     return run_command("Diagram generation", ["create_diagrams.py"], python_script=True)
+
+def summarize_results():
+    """Summarize all results."""
+    print_step(6, 6, "Summarizing Results")
+    
+    print("\nRESULTS SUMMARY")
+    print("=" * 80)
+    
+    # Check for saved models
+    models_dir = Path("models")
+    if models_dir.exists():
+        model_files = list(models_dir.glob("*.h5")) + list(models_dir.glob("*.keras"))
+        print(f"\n✓ Models saved: {len(model_files)}")
+        for model_file in sorted(model_files):
+            size_mb = model_file.stat().st_size / (1024 * 1024)
+            print(f"    - {model_file.name} ({size_mb:.1f} MB)")
+    
+    # Check for results
+    results_dir = Path("results")
+    if results_dir.exists():
+        result_files = list(results_dir.glob("*.png"))
+        print(f"\n✓ Visualizations created: {len(result_files)}")
+        for result_file in sorted(result_files):
+            print(f"    - {result_file.name}")
+    
+    # Check for logs
+    logs_dir = Path("logs")
+    if logs_dir.exists():
+        png_files = list(logs_dir.glob("*.png"))
+        if png_files:
+            print(f"\n✓ Training plots: {len(png_files)}")
+            for png in sorted(png_files):
+                print(f"    - {png.name}")
+    
+    print("\n" + "=" * 80)
+    print("PIPELINE COMPLETED SUCCESSFULLY!")
+    print("=" * 80)
+    print("\nOutput Locations:")
+    print(f"    Models:         {models_dir.absolute()}")
+    print(f"    Results:        {results_dir.absolute()}")
+    print(f"    Training Logs:  {logs_dir.absolute()}")
+    print("\nNext Steps:")
+    print("    - Review visualizations in results/")
+    print("    - Check SSIM scores in terminal output")
+    print("    - View training curves in logs/")
+    print("    - Use TensorBoard: tensorboard --logdir logs/")
+    print("")
