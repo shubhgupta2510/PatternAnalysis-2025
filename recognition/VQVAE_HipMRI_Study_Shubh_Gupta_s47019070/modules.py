@@ -146,3 +146,40 @@ class Encoder(layers.Layer):
             x = residual_block(x)
             
         return x
+
+
+class Decoder(layers.Layer):
+    """
+    Decoder network for VQ-VAE.
+    Upsamples quantized latent vectors back to image space.
+    """
+    
+    def __init__(self, num_residual_blocks=2, **kwargs):
+        super(Decoder, self).__init__(**kwargs)
+        
+        # Residual blocks
+        self.residual_blocks = [
+            ResidualBlock(64) for _ in range(num_residual_blocks)
+        ]
+        
+        # Upsampling layers
+        self.conv1 = layers.Conv2D(64, 3, padding='same',
+                                   kernel_initializer='he_normal', activation='relu')
+        self.upsample1 = layers.Conv2DTranspose(64, 4, strides=2, padding='same',
+                                                kernel_initializer='he_normal', activation='relu')
+        self.upsample2 = layers.Conv2DTranspose(32, 4, strides=2, padding='same',
+                                                kernel_initializer='he_normal', activation='relu')
+        self.conv_out = layers.Conv2D(1, 3, padding='same', activation='sigmoid',
+                                      kernel_initializer='glorot_uniform')
+        
+    def call(self, inputs, training=None):
+        x = self.conv1(inputs)
+        
+        for residual_block in self.residual_blocks:
+            x = residual_block(x)
+        
+        x = self.upsample1(x)
+        x = self.upsample2(x)
+        x = self.conv_out(x)
+        
+        return x
