@@ -286,3 +286,79 @@ def create_ssim_histogram(ssim_scores, save_dir='results'):
     plt.show()
     plt.close()
 
+def main():
+    """Main prediction and demonstration function."""
+    print("=" * 80)
+    print("VQ-VAE Model Prediction and Demonstration")
+    print("=" * 80)
+    
+    # Configuration
+    BASE_DIR = "keras_slices_data"
+    MODEL_PATH = "models/vqvae_best_*.h5"  # Use the best model
+    RESULTS_DIR = "results"
+    
+    # Find the most recent model
+    model_files = list(Path("models").glob("vqvae_best_*.h5"))
+    if not model_files:
+        print("Error: No trained model found!")
+        print("Please train the model first using train.py")
+        return
+    
+    # Use the most recent model
+    model_path = sorted(model_files)[-1]
+    
+    # Load model
+    model = load_trained_model(str(model_path))
+    
+    # Load test data
+    print("\nLoading test data...")
+    data_loader = HipMRIDataLoader(
+        base_dir=BASE_DIR,
+        target_size=(128, 128),
+        batch_size=32
+    )
+    data_loader.load_data()
+    _, _, test_dataset = data_loader.get_datasets()
+    
+    # Get sample images
+    test_images = data_loader.get_sample_images(num_samples=16, split='test')
+    
+    # Evaluate model performance
+    metrics = evaluate_model_performance(model, test_dataset, num_batches=10)
+    
+    # Demonstrate reconstruction
+    demonstrate_reconstruction(model, test_images[:8], RESULTS_DIR)
+    
+    # Demonstrate latent space
+    demonstrate_latent_space(model, test_images, RESULTS_DIR)
+    
+    # Demonstrate codebook analysis
+    demonstrate_codebook_analysis(model, test_dataset, RESULTS_DIR)
+    
+    # Demonstrate interpolation
+    demonstrate_interpolation(model, test_images, RESULTS_DIR)
+    
+    # Calculate SSIM for all test images in first few batches
+    print("\nCalculating SSIM scores for histogram...")
+    all_ssim_scores = []
+    for i, batch in enumerate(test_dataset.take(20)):
+        reconstructions = model.predict(batch, verbose=0)
+        ssim_scores = calculate_ssim(batch.numpy(), reconstructions)
+        all_ssim_scores.extend(ssim_scores)
+    
+    # Create SSIM histogram
+    create_ssim_histogram(all_ssim_scores, RESULTS_DIR)
+    
+    # Summary
+    print("\n" + "=" * 80)
+    print("Summary")
+    print("=" * 80)
+    print(f"Model: {model_path.name}")
+    print(f"Mean SSIM: {metrics['mean_ssim']:.4f}")
+    print(f"SSIM Threshold Met: {'Yes' if metrics['mean_ssim'] >= 0.6 else 'No'}")
+    print(f"Results saved to: {RESULTS_DIR}/")
+    print("=" * 80)
+
+
+if __name__ == "__main__":
+    main()
