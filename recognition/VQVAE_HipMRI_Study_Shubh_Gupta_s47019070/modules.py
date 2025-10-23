@@ -95,4 +95,21 @@ class VectorQuantizer(layers.Layer):
         encoding_indices = tf.argmin(distances, axis=1)
         return encoding_indices
 
+class ResidualBlock(layers.Layer):
+    """
+    Residual block with two convolutional layers and skip connection.
+    """
     
+    def __init__(self, filters, kernel_size=3, **kwargs):
+        super(ResidualBlock, self).__init__(**kwargs)
+        self.filters = filters
+        self.kernel_size = kernel_size
+        
+        self.conv1 = layers.Conv2D(filters, kernel_size, padding='same', activation='relu')
+        self.conv2 = layers.Conv2D(filters, kernel_size, padding='same')
+        self.activation = layers.Activation('relu')
+        
+    def call(self, inputs):
+        x = self.conv1(inputs)
+        x = self.conv2(x)
+        return self.activation(x + inputs)
