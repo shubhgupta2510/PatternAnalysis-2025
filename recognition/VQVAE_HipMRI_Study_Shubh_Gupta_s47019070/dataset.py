@@ -58,3 +58,23 @@ def normalize_image(image):
     image = (image - np.min(image)) / (np.max(image) - np.min(image))
     return image
 
+def preprocess_image(image, target_size=(128, 128)):
+    """
+    Preprocess a single image: resize and normalize.
+    
+    Args:
+        image: Input image
+        target_size: Target size for resizing
+        
+    Returns:
+        Preprocessed image
+    """
+    # Normalize
+    image = normalize_image(image)
+    
+    # Convert to tensor and resize
+    image = tf.convert_to_tensor(image, dtype=tf.float32)
+    image = tf.expand_dims(image, axis=-1)  # Add channel dimension
+    image = tf.image.resize(image, target_size)
+    
+    return image
