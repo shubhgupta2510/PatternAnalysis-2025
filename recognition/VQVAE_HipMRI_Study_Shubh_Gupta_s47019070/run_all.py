@@ -54,3 +54,40 @@ def run_command(description, command, python_script=False):
     except Exception as e:
         print(f"✗ Unexpected error during {description}: {e}")
         return False
+
+
+def check_setup():
+    """Verify setup before running pipeline."""
+    print_step(1, 6, "Verifying Setup")
+    
+    # Change to script directory
+    script_dir = Path(__file__).parent.absolute()
+    os.chdir(script_dir)
+    print(f"Working directory: {script_dir}")
+    
+    # Check if data directory exists
+    data_dir = Path("keras_slices_data")
+    if not data_dir.exists():
+        print("✗ Error: keras_slices_data directory not found!")
+        print(f"  Expected location: {data_dir.absolute()}")
+        print(f"  Current directory: {Path.cwd()}")
+        return False
+    
+    # Check for required files
+    required_files = ["modules.py", "dataset.py", "train.py", "predict.py", "utils.py"]
+    missing_files = [f for f in required_files if not Path(f).exists()]
+    
+    if missing_files:
+        print(f"✗ Error: Missing required files: {', '.join(missing_files)}")
+        return False
+    
+    print("✓ All required files found")
+    print(f"✓ Data directory exists with subdirectories:")
+    
+    for subdir in ["keras_slices_train", "keras_slices_validate", "keras_slices_test"]:
+        subdir_path = data_dir / subdir
+        if subdir_path.exists():
+            num_files = len(list(subdir_path.glob("*.nii.gz")))
+            print(f"    - {subdir}: {num_files} files")
+    
+    return True
