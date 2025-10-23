@@ -230,3 +230,24 @@ class HipMRIDataLoader:
         )
         
         return train_dataset, val_dataset, test_dataset
+    
+    def get_sample_images(self, num_samples=5, split='test'):
+        """
+        Get sample images for visualization.
+        
+        Args:
+            num_samples: Number of samples to return
+            split: Which split to sample from ('train', 'val', 'test')
+            
+        Returns:
+            Array of sample images
+        """
+        if split == 'train':
+            images = self.train_images
+        elif split == 'val':
+            images = self.val_images
+        else:
+            images = self.test_images
+        
+        indices = np.random.choice(len(images), min(num_samples, len(images)), replace=False)
+        return images[indices]
