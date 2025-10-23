@@ -219,3 +219,34 @@ def train_vqvae(base_dir,
     print("=" * 80)
     
     return model, history
+
+def main():
+    """Main training function."""
+    # Configuration
+    BASE_DIR = "keras_slices_data"  # Relative to script location
+    
+    # Hyperparameters
+    config = {
+        'input_shape': (128, 128, 1),
+        'latent_dim': 64,
+        'num_embeddings': 512,
+        'num_residual_blocks': 2,
+        'commitment_cost': 0.25,  # Standard VQ-VAE commitment cost
+        'batch_size': 32,
+        'epochs': 100,
+        'learning_rate': 1e-3,  # Back to standard learning rate
+        'save_dir': 'models',
+        'log_dir': 'logs'
+    }
+    
+    # Check if GPU is available
+    print("GPU Available: ", tf.config.list_physical_devices('GPU'))
+    
+    # Train model
+    model, history = train_vqvae(BASE_DIR, **config)
+    
+    return model, history
+
+
+if __name__ == "__main__":
+    model, history = main()
