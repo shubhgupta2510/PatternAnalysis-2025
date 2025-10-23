@@ -34,3 +34,53 @@ def calculate_ssim(original_images, reconstructed_images):
         ssim_scores.append(score)
     
     return ssim_scores
+
+def plot_training_history(history, save_path=None):
+    """
+    Plot training history including losses.
+    
+    Args:
+        history: Keras History object
+        save_path: Path to save the plot
+    """
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+    
+    # Plot total loss
+    axes[0].plot(history.history['total_loss'], label='Train Total Loss', linewidth=2)
+    if 'val_total_loss' in history.history:
+        axes[0].plot(history.history['val_total_loss'], label='Val Total Loss', linewidth=2)
+    axes[0].set_xlabel('Epoch', fontsize=12)
+    axes[0].set_ylabel('Loss', fontsize=12)
+    axes[0].set_title('Total Loss', fontsize=14, fontweight='bold')
+    axes[0].legend()
+    axes[0].grid(True, alpha=0.3)
+    
+    # Plot reconstruction loss
+    axes[1].plot(history.history['reconstruction_loss'], label='Train Recon Loss', linewidth=2)
+    if 'val_reconstruction_loss' in history.history:
+        axes[1].plot(history.history['val_reconstruction_loss'], label='Val Recon Loss', linewidth=2)
+    axes[1].set_xlabel('Epoch', fontsize=12)
+    axes[1].set_ylabel('Loss', fontsize=12)
+    axes[1].set_title('Reconstruction Loss', fontsize=14, fontweight='bold')
+    axes[1].legend()
+    axes[1].grid(True, alpha=0.3)
+    
+    # Plot VQ loss
+    axes[2].plot(history.history['vq_loss'], label='Train VQ Loss', linewidth=2)
+    if 'val_vq_loss' in history.history:
+        axes[2].plot(history.history['val_vq_loss'], label='Val VQ Loss', linewidth=2)
+    axes[2].set_xlabel('Epoch', fontsize=12)
+    axes[2].set_ylabel('Loss', fontsize=12)
+    axes[2].set_title('VQ Loss', fontsize=14, fontweight='bold')
+    axes[2].legend()
+    axes[2].grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Training history plot saved to: {save_path}")
+    
+    plt.show()
+    plt.close()
+
