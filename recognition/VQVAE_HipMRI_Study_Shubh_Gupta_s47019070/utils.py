@@ -132,3 +132,38 @@ def plot_reconstructions(model, images, save_path=None, num_images=8):
     plt.close()
     
     return ssim_scores
+
+def plot_latent_space_visualization(model, images, save_path=None):
+    """
+    Visualize the latent space representations.
+    
+    Args:
+        model: Trained VQ-VAE model
+        images: Input images
+        save_path: Path to save the plot
+    """
+    # Encode images
+    latents = model.encode(images[:16])
+    
+    fig, axes = plt.subplots(4, 4, figsize=(12, 12))
+    axes = axes.flatten()
+    
+    for i in range(min(16, len(latents))):
+        # Visualize mean across channels
+        latent_viz = np.mean(latents[i], axis=-1)
+        
+        im = axes[i].imshow(latent_viz, cmap='viridis')
+        axes[i].axis('off')
+        axes[i].set_title(f'Latent {i+1}', fontsize=10)
+        plt.colorbar(im, ax=axes[i], fraction=0.046, pad=0.04)
+    
+    plt.suptitle('Latent Space Representations', fontsize=16, fontweight='bold')
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Latent space plot saved to: {save_path}")
+    
+    plt.show()
+    plt.close()
+
