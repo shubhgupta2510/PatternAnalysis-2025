@@ -39,3 +39,22 @@ def load_nifti_slice(file_path):
     except Exception as e:
         print(f"Error loading {file_path}: {e}")
         return None
+
+def normalize_image(image):
+    """
+    Normalize image to [0, 1] range.
+    
+    Args:
+        image: Input image array
+        
+    Returns:
+        Normalized image
+    """
+    # Handle case where image might be all zeros
+    if np.max(image) == np.min(image):
+        return np.zeros_like(image)
+    
+    # Min-max normalization
+    image = (image - np.min(image)) / (np.max(image) - np.min(image))
+    return image
+
