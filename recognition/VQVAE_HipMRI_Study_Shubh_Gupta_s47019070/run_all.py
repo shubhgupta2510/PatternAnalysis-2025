@@ -113,3 +113,16 @@ def train_model(quick_mode=False):
     print("")
     
     return run_command("Model training", ["train.py"], python_script=True)
+
+def run_predictions():
+    """Run predictions and generate visualizations."""
+    print_step(4, 6, "Generating Predictions and Visualizations")
+    
+    print("This will:")
+    print("  - Load the best trained model")
+    print("  - Evaluate on test set")
+    print("  - Calculate SSIM scores")
+    print("  - Generate all visualizations")
+    print("")
+    
+    return run_command("Prediction and evaluation", ["predict.py"], python_script=True)
