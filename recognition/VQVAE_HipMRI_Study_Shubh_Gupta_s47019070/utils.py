@@ -167,3 +167,61 @@ def plot_latent_space_visualization(model, images, save_path=None):
     plt.show()
     plt.close()
 
+
+def plot_codebook_usage(model, dataset, save_path=None):
+    """
+    Analyze and plot codebook usage statistics.
+    
+    Args:
+        model: Trained VQ-VAE model
+        dataset: TensorFlow dataset
+        save_path: Path to save the plot
+    """
+    codebook_counts = np.zeros(model.num_embeddings)
+    
+    # Count codebook usage
+    for batch in dataset.take(10):  # Take 10 batches for analysis
+        encoded = model.encoder(batch)
+        
+        # Get codebook indices
+        flattened = tf.reshape(encoded, [-1, model.latent_dim])
+        indices = model.vq_layer.get_code_indices(flattened)
+        
+        # Count occurrences
+        unique, counts = np.unique(indices.numpy(), return_counts=True)
+        for idx, count in zip(unique, counts):
+            codebook_counts[idx] += count
+    
+    # Plot
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    
+    # Histogram
+    axes[0].bar(range(len(codebook_counts)), codebook_counts)
+    axes[0].set_xlabel('Codebook Index', fontsize=12)
+    axes[0].set_ylabel('Usage Count', fontsize=12)
+    axes[0].set_title('Codebook Usage Distribution', fontsize=14, fontweight='bold')
+    axes[0].grid(True, alpha=0.3)
+    
+    # Statistics
+    used_codes = np.sum(codebook_counts > 0)
+    usage_percentage = (used_codes / len(codebook_counts)) * 100
+    
+    stats_text = f"Total Codes: {len(codebook_counts)}\n"
+    stats_text += f"Used Codes: {used_codes}\n"
+    stats_text += f"Usage: {usage_percentage:.1f}%\n"
+    stats_text += f"Mean Count: {np.mean(codebook_counts):.1f}\n"
+    stats_text += f"Max Count: {np.max(codebook_counts):.0f}"
+    
+    axes[1].text(0.1, 0.5, stats_text, fontsize=14, family='monospace',
+                verticalalignment='center')
+    axes[1].axis('off')
+    axes[1].set_title('Codebook Statistics', fontsize=14, fontweight='bold')
+    
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Codebook usage plot saved to: {save_path}")
+    
+    plt.show()
+    plt.close()
