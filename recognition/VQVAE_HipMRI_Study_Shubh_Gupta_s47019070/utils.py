@@ -242,3 +242,47 @@ def save_model_config(config, save_path):
     
     print(f"Configuration saved to: {save_path}")
 
+
+def compare_models(models_dict, test_images, save_path=None):
+    """
+    Compare multiple models on the same test images.
+    
+    Args:
+        models_dict: Dictionary of {model_name: model} pairs
+        test_images: Test images to use
+        save_path: Path to save the comparison plot
+    """
+    num_models = len(models_dict)
+    num_images = min(5, len(test_images))
+    
+    fig, axes = plt.subplots(num_models + 1, num_images, 
+                            figsize=(2.5 * num_images, 2.5 * (num_models + 1)))
+    
+    # Plot original images
+    for j in range(num_images):
+        axes[0, j].imshow(test_images[j].squeeze(), cmap='gray')
+        axes[0, j].axis('off')
+        if j == 0:
+            axes[0, j].set_ylabel('Original', fontsize=10, fontweight='bold')
+    
+    # Plot reconstructions for each model
+    for i, (model_name, model) in enumerate(models_dict.items(), 1):
+        reconstructions = model.predict(test_images[:num_images], verbose=0)
+        ssim_scores = calculate_ssim(test_images[:num_images], reconstructions)
+        
+        for j in range(num_images):
+            axes[i, j].imshow(reconstructions[j].squeeze(), cmap='gray')
+            axes[i, j].axis('off')
+            axes[i, j].set_title(f'SSIM: {ssim_scores[j]:.3f}', fontsize=8)
+            
+            if j == 0:
+                axes[i, j].set_ylabel(model_name, fontsize=10, fontweight='bold')
+    
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Model comparison plot saved to: {save_path}")
+    
+    plt.show()
+    plt.close()
