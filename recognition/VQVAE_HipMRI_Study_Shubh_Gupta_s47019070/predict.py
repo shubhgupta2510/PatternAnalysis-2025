@@ -71,3 +71,62 @@ def load_trained_model(model_path):
         except Exception as e2:
             print(f"Error loading weights: {e2}")
             raise ValueError(f"Could not load model from {model_path}")
+
+def evaluate_model_performance(model, test_dataset, num_batches=10):
+    """
+    Evaluate model performance on test set.
+    
+    Args:
+        model: Trained VQ-VAE model
+        test_dataset: Test dataset
+        num_batches: Number of batches to evaluate
+        
+    Returns:
+        Dictionary of performance metrics
+    """
+    print("\n" + "=" * 80)
+    print("Evaluating Model Performance")
+    print("=" * 80)
+    
+    all_ssim_scores = []
+    reconstruction_errors = []
+    
+    for i, batch in enumerate(test_dataset.take(num_batches)):
+        # Get reconstructions
+        reconstructions = model.predict(batch, verbose=0)
+        
+        # Calculate SSIM
+        ssim_scores = calculate_ssim(batch.numpy(), reconstructions)
+        all_ssim_scores.extend(ssim_scores)
+        
+        # Calculate reconstruction error (MSE)
+        mse = np.mean((batch.numpy() - reconstructions) ** 2, axis=(1, 2, 3))
+        reconstruction_errors.extend(mse)
+    
+    # Calculate statistics
+    metrics = {
+        'mean_ssim': np.mean(all_ssim_scores),
+        'std_ssim': np.std(all_ssim_scores),
+        'min_ssim': np.min(all_ssim_scores),
+        'max_ssim': np.max(all_ssim_scores),
+        'mean_mse': np.mean(reconstruction_errors),
+        'std_mse': np.std(reconstruction_errors),
+    }
+    
+    # Print results
+    print("\nPerformance Metrics:")
+    print("-" * 80)
+    print(f"Mean SSIM:       {metrics['mean_ssim']:.4f} ± {metrics['std_ssim']:.4f}")
+    print(f"SSIM Range:      [{metrics['min_ssim']:.4f}, {metrics['max_ssim']:.4f}]")
+    print(f"Mean MSE:        {metrics['mean_mse']:.6f} ± {metrics['std_mse']:.6f}")
+    print("-" * 80)
+    
+    # Check if SSIM threshold is met
+    if metrics['mean_ssim'] >= 0.6:
+        print("✓ Model meets SSIM threshold of 0.6!")
+    else:
+        print("✗ Model does not meet SSIM threshold of 0.6")
+    
+    print("=" * 80)
+    
+    return metrics
