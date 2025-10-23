@@ -88,3 +88,58 @@ SAVE_BEST_ONLY = True
 SAVE_WEIGHTS_ONLY = False
 MONITOR_METRIC = "val_total_loss"
 MONITOR_MODE = "min"
+
+def get_config_dict():
+    """
+    Return configuration as a dictionary.
+    
+    Returns:
+        Dictionary containing all configuration parameters
+    """
+    return {
+        # Paths
+        'base_dir': str(BASE_DIR),
+        'data_dir': str(DATA_DIR),
+        'model_dir': str(MODEL_DIR),
+        'log_dir': str(LOG_DIR),
+        'results_dir': str(RESULTS_DIR),
+        
+        # Data
+        'input_shape': INPUT_SHAPE,
+        'batch_size': BATCH_SIZE,
+        
+        # Model
+        'latent_dim': LATENT_DIM,
+        'num_embeddings': NUM_EMBEDDINGS,
+        'num_residual_blocks': NUM_RESIDUAL_BLOCKS,
+        'commitment_cost': COMMITMENT_COST,
+        
+        # Training
+        'epochs': EPOCHS,
+        'learning_rate': LEARNING_RATE,
+        'optimizer': OPTIMIZER,
+        'early_stopping_patience': EARLY_STOPPING_PATIENCE,
+        
+        # Evaluation
+        'ssim_threshold': SSIM_THRESHOLD,
+        
+        # Reproducibility
+        'random_seed': RANDOM_SEED,
+    }
+
+
+def print_config():
+    """Print current configuration."""
+    print("=" * 80)
+    print("VQ-VAE Configuration")
+    print("=" * 80)
+    
+    config = get_config_dict()
+    for key, value in config.items():
+        print(f"{key:30s}: {value}")
+    
+    print("=" * 80)
+
+
+if __name__ == "__main__":
+    print_config()
