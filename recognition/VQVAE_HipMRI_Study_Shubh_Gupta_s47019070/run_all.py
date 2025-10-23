@@ -178,3 +178,118 @@ def summarize_results():
     print("    - View training curves in logs/")
     print("    - Use TensorBoard: tensorboard --logdir logs/")
     print("")
+
+def main():
+    """Main pipeline execution."""
+    parser = argparse.ArgumentParser(
+        description="VQ-VAE Complete Pipeline - Train and Evaluate",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python run_all.py                    # Run complete pipeline
+  python run_all.py --quick            # Quick mode (for testing)
+  python run_all.py --skip-train       # Skip training, only predict
+  python run_all.py --train-only       # Only train, skip predictions
+  python run_all.py --no-verify        # Skip setup verification
+        """
+    )
+    
+    parser.add_argument(
+        "--quick",
+        action="store_true",
+        help="Quick mode with reduced epochs (for testing)"
+    )
+    
+    parser.add_argument(
+        "--skip-train",
+        action="store_true",
+        help="Skip training (assumes model already exists)"
+    )
+    
+    parser.add_argument(
+        "--train-only",
+        action="store_true",
+        help="Only train the model, skip predictions"
+    )
+    
+    parser.add_argument(
+        "--no-verify",
+        action="store_true",
+        help="Skip setup verification step"
+    )
+    
+    parser.add_argument(
+        "--no-diagrams",
+        action="store_true",
+        help="Skip diagram generation"
+    )
+    
+    args = parser.parse_args()
+    
+    # Print welcome message
+    print_header("VQ-VAE Complete Pipeline")
+    print("Author: Shubh Gupta (s47019070)")
+    print("Project: HipMRI Study Generative Model")
+    print("=" * 80)
+    
+    # Track success of each step
+    all_success = True
+    
+    # Step 1: Check setup
+    if not args.no_verify:
+        if not check_setup():
+            print("\nSetup verification failed. Please fix issues and try again.")
+            return 1
+    
+    # Step 2: Run test setup
+    if not args.no_verify:
+        if not run_test_setup():
+            print("\nSetup test failed, but continuing anyway...")
+    
+    # Step 3: Train model
+    if not args.skip_train:
+        if not train_model(quick_mode=args.quick):
+            print("\nTraining failed!")
+            all_success = False
+            if not args.train_only:
+                print("Cannot proceed to predictions without a trained model.")
+                return 1
+    else:
+        print_step(3, 6, "Skipping Training (as requested)")
+        print("✓ Using existing model")
+    
+    # Step 4: Run predictions
+    if not args.train_only and all_success:
+        if not run_predictions():
+            print("\nPrediction failed!")
+            all_success = False
+    elif args.train_only:
+        print_step(4, 6, "Skipping Predictions (train-only mode)")
+    
+    # Step 5: Create diagrams (optional)
+    if not args.no_diagrams and not args.train_only:
+        if not create_diagrams():
+            print("\nDiagram generation failed, but continuing...")
+    
+    # Step 6: Summarize
+    if all_success:
+        summarize_results()
+        return 0
+    else:
+        print("\nPipeline completed with errors. Please review output above.")
+        return 1
+
+
+if __name__ == "__main__":
+    try:
+        exit_code = main()
+        sys.exit(exit_code)
+    except KeyboardInterrupt:
+        print("\n\nPipeline interrupted by user.")
+        print("Partial results may be available in models/ and results/ directories.")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\nUnexpected error: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
