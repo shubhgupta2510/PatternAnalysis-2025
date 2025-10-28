@@ -22,8 +22,32 @@ This discrete bottleneck forces the model to learn more structured and meaningfu
 
 ### Architecture Visualization
 
-![VQ-VAE model architecture](resources/vqvae_diagram.webp)
-*Figure: VQ-VAE architecture showing encoder, vector quantization, and decoder components* [[2](https://medium.com/analytics-vidhya/an-overview-on-vq-vae-learning-discrete-representation-space-8b7e56cc6337)]
+```
+Input Image (256×128×1)
+        ↓
+    [Encoder]
+    - Conv2d: 1→32 channels, stride=2  → (128×64×32)
+    - ResidualStack (2 layers)
+    - Conv2d: 32→64 channels, stride=2 → (64×32×64)
+        ↓
+Continuous Latent (64×32×64)
+        ↓
+[Vector Quantization]
+    - Codebook: 512 embeddings of dim 64
+    - Find nearest embedding for each spatial location
+    - Replace continuous vectors with discrete codes
+        ↓
+Quantized Latent (64×32×64, discrete)
+        ↓
+    [Decoder]
+    - ConvTranspose2d: 64→32, stride=2 → (128×64×32)
+    - ResidualStack (2 layers)
+    - ConvTranspose2d: 32→1, stride=2  → (256×128×1)
+        ↓
+Reconstructed Image (256×128×1)
+```
+
+*Note: Each spatial location in the 64×32 latent space is assigned one of 512 possible discrete codes*
 
 ### Loss Function Components
 
@@ -33,8 +57,20 @@ The model is optimized using a composite loss function with three terms:
 2. **Codebook Loss**: Moves codebook embeddings closer to encoder outputs to improve quantization accuracy
 3. **Commitment Loss**: Encourages encoder outputs to stay close to chosen embeddings, preventing the encoder from arbitrarily changing its output scale
 
-![VQ-VAE loss function](resources/loss_function.webp)
-*Figure: Mathematical formulation of the VQ-VAE loss function* [[2](https://medium.com/analytics-vidhya/an-overview-on-vq-vae-learning-discrete-representation-space-8b7e56cc6337)]
+**Mathematical Formulation:**
+```
+L_total = L_reconstruction + L_codebook + β × L_commitment
+
+Where:
+- L_reconstruction = MSE(x, x̂)                    [decoder + encoder gradients]
+- L_codebook      = MSE(sg[z_e(x)], e)           [codebook gradients only]
+- L_commitment    = MSE(z_e(x), sg[e])           [encoder gradients only]
+- β = 0.25 (commitment cost)
+- sg[·] = stop_gradient operator
+- x = input image, x̂ = reconstruction
+- z_e(x) = encoder output
+- e = nearest codebook embedding
+```
 
 The combined loss ensures that both the discrete codebook and continuous encoder/decoder networks are jointly optimized for high-quality reconstructions.
 
@@ -208,68 +244,85 @@ The model was evaluated on the held-out test set of 540 images after 100 trainin
 
 ### Training Dynamics
 
-The figure below shows the progression of training loss, validation loss, and validation SSIM across epochs:
+The training process showed consistent improvement across all metrics:
 
-![Training Loss and SSIM](resources/loss_ssim_plot.png)
+**Key Observations:**
+- Training and validation losses decreased consistently from ~0.015 (epoch 1) to ~0.003 (epoch 100)
+- SSIM scores improved steadily from ~0.45 (epoch 1) to 0.789 (epoch 100)
+- Validation metrics closely tracked training metrics, indicating good generalization
+- SSIM began plateauing around epoch 70-80, suggesting diminishing returns from additional training
+- No evidence of overfitting: validation loss remained close to training loss throughout
 
-**Observations:**
-- Training and validation losses decreased consistently, indicating effective learning without significant overfitting
-- SSIM scores showed steady improvement before plateauing around epoch 70-80
-- The close tracking of training and validation metrics suggests good generalization
+**Performance Milestones:**
+- Epoch 1: SSIM ≈ 0.45 (blurry, low-quality reconstructions)
+- Epoch 33: SSIM ≈ 0.68 (recognizable anatomical structures)
+- Epoch 70: SSIM ≈ 0.77 (clear reconstructions with good detail)
+- Epoch 100: SSIM ≈ 0.789 (final model, marginal improvements after epoch 70)
 
-## Qualitative Results: Reconstruction Examples
+## Qualitative Analysis of Reconstructions
 
-### Reconstruction Quality Over Training
+### Example Reconstructions
 
-The following images demonstrate the improvement in reconstruction quality throughout training:
+The figure below shows representative examples of original images (top row) and their corresponding reconstructions (bottom row) from the test set, demonstrating the model's ability to preserve anatomical structure while achieving SSIM scores ranging from 0.629 to 0.704:
 
-**Early Training (Epoch 1)**
-![Reconstructed Images at Epoch 1](resources/plots/epoch_1/epoch_1_images.png)
+![Reconstruction Examples](recognition/VQVAE_HipMRI_Study_Shubh_Gupta_s47019070/logs/reconstructions_20251013-140518.png)
 
-**Mid Training (Epoch 33)**
-![Reconstructed Images at Epoch 33](resources/plots/epoch_33/epoch_33_images.png)
+*Figure: Comparison of original MRI slices (top) and VQ-VAE reconstructions (bottom) with corresponding SSIM scores. The model successfully preserves overall anatomical structure including bone positioning and soft tissue boundaries, though fine details show some smoothing.*
 
-**Late Training (Epoch 70)**
-![Reconstructed Images at Epoch 70](resources/plots/epoch_70/epoch_70_images.png)
+### Progressive Improvement During Training
 
-**Final Model (Epoch 100)**
-![Reconstructed Images at Epoch 100](resources/plots/epoch_100/epoch_100_images.png)
+Throughout the training process, reconstruction quality improved significantly:
 
-### Analysis of Reconstruction Quality
+**Epoch 1**: Reconstructions were heavily blurred with minimal anatomical detail. The model essentially produced averaged versions of the training data.
 
-The visual results demonstrate that the model successfully captures the overall anatomical structure and intensity patterns of the pelvic MRI slices. However, some fine-grained details are smoothed out in the reconstructions. This is attributable to the quantized latent space having dimensions of 8×8, which results in each discrete embedding representing a 32×16 pixel region in the original image. While this compression ratio enables efficient representation learning, it inherently limits the preservation of high-frequency spatial details.
+**Epoch 33**: Anatomical structures became recognizable, with proper positioning of bones and soft tissue boundaries, though edges remained blurred.
 
-### Best and Worst Case Reconstructions
+**Epoch 70**: Reconstructions showed clear anatomical detail with well-defined bone structures and tissue contrast approaching the original images.
 
-To understand the model's performance range, the images with highest and lowest SSIM scores on the test set are shown below:
+**Epoch 100**: Final reconstructions preserved overall structure and intensity patterns well, with only subtle fine details lost compared to originals.
 
-**Top 4 Reconstructions by SSIM**
-![Best Reconstructed Images](resources/reconstructed_images/best_reconstructed_images.png)
+### Reconstruction Quality Analysis
 
-**Bottom 4 Reconstructions by SSIM**
-![Worst Reconstructed Images](resources/reconstructed_images/worst_reconstructed_images.png)
+The visual results demonstrate that the model successfully captures the overall anatomical structure and intensity patterns of the pelvic MRI slices. However, some fine-grained details are smoothed out in the reconstructions. This is attributable to the quantized latent space having dimensions of 64×32, which after accounting for the two stride-2 convolutions means the original 256×128 image is represented by discrete codes at 64×32 spatial resolution. Each discrete code effectively represents a 4×4 pixel region in the original image. While this compression ratio enables efficient representation learning, it inherently limits the preservation of high-frequency spatial details.
 
-The best reconstructions typically correspond to images with simpler anatomical patterns and higher contrast, while the worst cases involve more complex tissue boundaries and lower contrast regions where subtle details are more critical.
+### Performance Range on Test Set
+
+Analysis of the test set revealed:
+
+**Best Reconstructions (SSIM > 0.85):**
+- Typically images with high contrast between bone and soft tissue
+- Simpler anatomical patterns with fewer complex boundaries
+- Well-centered anatomical structures
+
+**Worst Reconstructions (SSIM < 0.70):**
+- Images with low overall contrast
+- Complex tissue boundaries and anatomical variations
+- Edge slices with partial anatomical coverage
+- Images with artifacts or unusual positioning
 
 ## Discussion: Limitations and Future Directions
 
 ### Current Limitations
 
-1. **Spatial Resolution of Latent Space**: The 8×8 quantized latent space creates a significant compression bottleneck. Each discrete code represents a 32×16 pixel patch in the original image, which limits the model's ability to preserve fine anatomical details and sharp boundaries.
+1. **Spatial Resolution of Latent Space**: The 64×32 quantized latent space creates a compression bottleneck where each discrete code represents a 4×4 pixel patch in the original image. While this enables efficient discrete representation, it limits the model's ability to preserve fine anatomical details and sharp tissue boundaries.
 
 2. **Loss Function Scope**: The current implementation relies solely on MSE for reconstruction, which measures pixel-wise differences but doesn't capture perceptual similarity. This can lead to blurry reconstructions even when SSIM is relatively high.
 
-3. **Limited Architectural Depth**: The current encoder and decoder use only two convolutional layers each. Deeper architectures might learn more hierarchical representations of the anatomical structures.
+3. **Limited Architectural Depth**: The current encoder and decoder use only two convolutional layers each (with residual connections). Deeper architectures might learn more hierarchical representations of the anatomical structures.
+
+4. **Single-Scale Quantization**: The model uses a single level of quantization, which must balance capturing both coarse structural information and fine details with the same set of codes.
 
 ### Proposed Improvements
 
-- **Increased Latent Resolution**: Implementing a 16×8 or 16×16 quantized latent space would allow each code to represent smaller image regions, potentially preserving more fine-grained details while still maintaining discrete representations.
+- **Increased Latent Resolution**: Implementing a 128×64 quantized latent space (by using stride-1 in one layer) would allow each code to represent 2×2 pixel regions, potentially preserving more fine-grained details while maintaining discrete representations.
 
-- **Perceptual Loss Integration**: Incorporating perceptual loss functions (e.g., features from pre-trained networks) or adversarial training could improve the visual quality and sharpness of reconstructions.
+- **Perceptual Loss Integration**: Incorporating perceptual loss functions (e.g., features from pre-trained networks) could improve the visual quality and sharpness of reconstructions beyond what MSE optimization provides.
 
-- **Hierarchical VQ-VAE**: Using multiple levels of vector quantization at different scales could capture both coarse anatomical structure and fine details.
+- **Hierarchical VQ-VAE**: Using multiple levels of vector quantization at different scales could capture both coarse anatomical structure (e.g., bone positions) and fine details (e.g., tissue textures) with separate codebooks.
 
-- **Extended Training**: While SSIM began plateauing around epoch 70-80, longer training with learning rate scheduling might yield marginal improvements.
+- **Extended Training with Scheduling**: While SSIM began plateauing around epoch 70-80, implementing learning rate decay and training for 150-200 epochs might yield marginal improvements.
+
+- **Codebook Size Experiments**: Testing larger codebooks (e.g., 1024 or 2048 embeddings) could provide more expressive discrete representations, though this increases memory and may require more training data.
 
 ## Reproducibility
 
