@@ -4,23 +4,23 @@
 
 ## Overview
 
-This project implements a Vector Quantized Variational Autoencoder (VQ-VAE) for reconstructing 2D MRI slices from the CSIRO HipMRI dataset [[1](https://data.csiro.au/collection/csiro:51392v2?redirected=true)]. The primary objective is to develop a generative model capable of learning compressed representations of medical imaging data and reconstructing high-quality images with a Structural Similarity Index Measure (SSIM) exceeding 0.6.
+This project implements a Vector Quantised Variational Autoencoder (VQ-VAE) for reconstructing 2D MRI slices from the CSIRO HipMRI dataset [[1](https://data.csiro.au/collection/csiro:51392v2?redirected=true)]. The primary objective is to develop a generative model capable of learning compressed representations of medical imaging data and reconstructing high-quality images with a Structural Similarity Index Measure (SSIM) exceeding 0.6.
 
 ### What is VQ-VAE?
 
-Traditional Variational Autoencoders (VAEs) encode images into continuous latent spaces, which can lead to issues such as posterior collapse where the model ignores latent variables during reconstruction [[3](https://arxiv.org/abs/1711.00937)]. The VQ-VAE addresses this limitation by introducing discrete latent representations through vector quantization.
+Traditional Variational Autoencoders (VAEs) encode images into continuous latent spaces, which can lead to issues such as posterior collapse where the model ignores latent variables during reconstruction [[3](https://arxiv.org/abs/1711.00937)]. The VQ-VAE addresses this limitation by introducing discrete latent representations through vector quantisation.
 
 ### How VQ-VAE Works
 
 The VQ-VAE architecture consists of three main components:
 
 1. **Encoder**: Compresses input images into continuous latent vectors
-2. **Vector Quantization Layer**: Maps continuous encoder outputs to discrete codebook vectors by finding the nearest embedding in a learned codebook
-3. **Decoder**: Reconstructs images from the quantized latent representations
+2. **Vector Quantisation Layer**: Maps continuous encoder outputs to discrete codebook vectors by finding the nearest embedding in a learned codebook
+3. **Decoder**: Reconstructs images from the quantised latent representations
 
-This discrete bottleneck forces the model to learn more structured and meaningful representations compared to standard VAEs. The quantization process creates a fixed set of embedding vectors (codebook) that the model learns during training, allowing for better control over the latent space [[2](https://medium.com/analytics-vidhya/an-overview-on-vq-vae-learning-discrete-representation-space-8b7e56cc6337)].
+This discrete bottleneck forces the model to learn more structured and meaningful representations compared to standard VAEs. The quantisation process creates a fixed set of embedding vectors (codebook) that the model learns during training, allowing for better control over the latent space [[2](https://medium.com/analytics-vidhya/an-overview-on-vq-vae-learning-discrete-representation-space-8b7e56cc6337)].
 
-### Architecture Visualization
+### Architecture Visualisation
 
 ```
 Input Image (256×128×1)
@@ -32,12 +32,12 @@ Input Image (256×128×1)
         ↓
 Continuous Latent (64×32×64)
         ↓
-[Vector Quantization]
+[Vector Quantisation]
     - Codebook: 512 embeddings of dim 64
     - Find nearest embedding for each spatial location
     - Replace continuous vectors with discrete codes
         ↓
-Quantized Latent (64×32×64, discrete)
+Quantised Latent (64×32×64, discrete)
         ↓
     [Decoder]
     - ConvTranspose2d: 64→32, stride=2 → (128×64×32)
@@ -51,10 +51,10 @@ Reconstructed Image (256×128×1)
 
 ### Loss Function Components
 
-The model is optimized using a composite loss function with three terms:
+The model is optimised using a composite loss function with three terms:
 
 1. **Reconstruction Loss**: Quantifies pixel-wise differences between original and reconstructed images using mean squared error
-2. **Codebook Loss**: Moves codebook embeddings closer to encoder outputs to improve quantization accuracy
+2. **Codebook Loss**: Moves codebook embeddings closer to encoder outputs to improve quantisation accuracy
 3. **Commitment Loss**: Encourages encoder outputs to stay close to chosen embeddings, preventing the encoder from arbitrarily changing its output scale
 
 **Mathematical Formulation:**
@@ -72,7 +72,7 @@ Where:
 - e = nearest codebook embedding
 ```
 
-The combined loss ensures that both the discrete codebook and continuous encoder/decoder networks are jointly optimized for high-quality reconstructions.
+The combined loss ensures that both the discrete codebook and continuous encoder/decoder networks are jointly optimised for high-quality reconstructions.
 
 ## Dataset Description and Preprocessing
 
@@ -97,20 +97,20 @@ The dataset was partitioned into training, validation, and test sets using an ap
 | Test       | 540         | 4.3%       |
 | **Total**  | **12,660**  | **100%**   |
 
-This split ensures sufficient training data while reserving adequate samples for validation during training and final evaluation. The larger training set is necessary for the model to learn the diverse anatomical variations present in medical imaging. The validation set provides enough samples to monitor overfitting, while the test set offers a robust evaluation of generalization performance.
+This split ensures sufficient training data while reserving adequate samples for validation during training and final evaluation. The larger training set is necessary for the model to learn the diverse anatomical variations present in medical imaging. The validation set provides enough samples to monitor overfitting, while the test set offers a robust evaluation of generalisation performance.
 
 ### Preprocessing Pipeline
 
 All preprocessing is handled by the data loading pipeline with the following transformations:
 
-1. **Resizing**: All images standardized to 256×128 pixels to ensure uniform input dimensions
-2. **Normalization**: Pixel values normalized to zero mean and unit variance to stabilize training and help the model converge faster
+1. **Resizing**: All images standardised to 256×128 pixels to ensure uniform input dimensions
+2. **Normalisation**: Pixel values normalised to zero mean and unit variance to stabilise training and help the model converge faster
 
 No data augmentation was applied to preserve the anatomical accuracy of the medical images, as geometric transformations could introduce artifacts not representative of real clinical data.
 
 ## Model Architecture
 
-The complete model architecture is defined in `modules.py`. The implementation consists of an encoder-decoder structure with vector quantization in the latent space.
+The complete model architecture is defined in `modules.py`. The implementation consists of an encoder-decoder structure with vector quantisation in the latent space.
 
 <details>
 <summary>VQ-VAE model structure (need to be CLICKED)</summary>
@@ -135,7 +135,7 @@ VQVAE(
     )
     (conv2): Conv2d(32, 64, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
   )
-  (vector_quantization): VectorQuantizer(
+  (vector_quantisation): VectorQuantizer(
     (embedding): Embedding(512, 64)
   )
   (decoder): Decoder(
@@ -195,7 +195,7 @@ ResidualLayer(
 
 ## Training Methodology
 
-The training implementation is contained in `train.py`. The model was trained end-to-end using the Adam optimizer with a multi-component loss function.
+The training implementation is contained in `train.py`. The model was trained end-to-end using the Adam optimiser with a multi-component loss function.
 
 ### Training Configuration
 
@@ -203,11 +203,11 @@ The following hyperparameters were selected through empirical experimentation:
 
 | Parameter            | Value  | Rationale                                                                                               |
 | -------------------- | ------ | ------------------------------------------------------------------------------------------------------- |
-| Batch Size           | 16     | Balanced GPU memory utilization with stable gradient estimates                                          |
+| Batch Size           | 16     | Balanced GPU memory utilisation with stable gradient estimates                                          |
 | Total Epochs         | 100    | Sufficient for convergence based on validation SSIM plateauing                                          |
 | Learning Rate        | 1e-4   | Provided stable training without oscillations; tested against 1e-3 (unstable) and 1e-5 (too slow)       |
 | Embedding Dimension  | 64     | Captured sufficient detail without overfitting; higher values showed diminishing returns                |
-| Codebook Size        | 512    | Number of discrete embedding vectors in the quantization codebook                                       |
+| Codebook Size        | 512    | Number of discrete embedding vectors in the quantisation codebook                                       |
 | Commitment Cost (β)  | 0.25   | Balanced encoder commitment to embeddings; standard value from VQ-VAE literature [[3](https://arxiv.org/abs/1711.00937)] |
 | Hidden Channels      | 64     | Determined encoder/decoder capacity                                                                     |
 
@@ -229,14 +229,14 @@ The commitment cost β prevents the encoder from arbitrarily increasing the magn
 During each training epoch:
 
 1. Images are passed through the encoder to produce continuous latent vectors
-2. Latent vectors are quantized by finding nearest codebook embeddings
-3. Quantized vectors are decoded to reconstruct images
+2. Latent vectors are quantised by finding nearest codebook embeddings
+3. Quantised vectors are decoded to reconstruct images
 4. All three loss components are computed and combined
 5. Gradients are backpropagated to update encoder, decoder, and codebook parameters
 6. Validation SSIM is computed at the end of each epoch
 7. Model checkpoint is saved when validation SSIM improves
 
-The model was trained using the Adam optimizer which adapts learning rates for each parameter, helping to handle the different scales of the three loss components.
+The model was trained using the Adam optimiser which adapts learning rates for each parameter, helping to handle the different scales of the three loss components.
 
 ## Experimental Results
 
@@ -249,15 +249,16 @@ The training process showed consistent improvement across all metrics:
 **Key Observations:**
 - Training and validation losses decreased consistently from ~0.015 (epoch 1) to ~0.003 (epoch 100)
 - SSIM scores improved steadily from ~0.45 (epoch 1) to 0.789 (epoch 100)
-- Validation metrics closely tracked training metrics, indicating good generalization
+- Validation metrics closely tracked training metrics, indicating good generalisation
 - SSIM began plateauing around epoch 70-80, suggesting diminishing returns from additional training
 - No evidence of overfitting: validation loss remained close to training loss throughout
 
 **Performance Milestones:**
 - Epoch 1: SSIM ≈ 0.45 (blurry, low-quality reconstructions)
-- Epoch 33: SSIM ≈ 0.68 (recognizable anatomical structures)
+- Epoch 33: SSIM ≈ 0.68 (recognisable anatomical structures)
 - Epoch 70: SSIM ≈ 0.77 (clear reconstructions with good detail)
 - Epoch 100: SSIM ≈ 0.789 (final model, marginal improvements after epoch 70)
+
 
 ## Qualitative Analysis of Reconstructions
 
@@ -265,7 +266,7 @@ The training process showed consistent improvement across all metrics:
 
 The figure below shows representative examples of original images (top row) and their corresponding reconstructions (bottom row) from the test set, demonstrating the model's ability to preserve anatomical structure while achieving SSIM scores ranging from 0.629 to 0.704:
 
-![Reconstruction Examples](recognition/VQVAE_HipMRI_Study_Shubh_Gupta_s47019070/logs/reconstructions_20251013-140518.png)
+<img width="5883" height="1484" alt="reconstructions_20251013-140518" src="https://github.com/user-attachments/assets/0a9570a6-a37f-4cfe-927b-3fdd1427b517" />
 
 *Figure: Comparison of original MRI slices (top) and VQ-VAE reconstructions (bottom) with corresponding SSIM scores. The model successfully preserves overall anatomical structure including bone positioning and soft tissue boundaries, though fine details show some smoothing.*
 
@@ -275,7 +276,7 @@ Throughout the training process, reconstruction quality improved significantly:
 
 **Epoch 1**: Reconstructions were heavily blurred with minimal anatomical detail. The model essentially produced averaged versions of the training data.
 
-**Epoch 33**: Anatomical structures became recognizable, with proper positioning of bones and soft tissue boundaries, though edges remained blurred.
+**Epoch 33**: Anatomical structures became recognisable, with proper positioning of bones and soft tissue boundaries, though edges remained blurred.
 
 **Epoch 70**: Reconstructions showed clear anatomical detail with well-defined bone structures and tissue contrast approaching the original images.
 
@@ -283,7 +284,7 @@ Throughout the training process, reconstruction quality improved significantly:
 
 ### Reconstruction Quality Analysis
 
-The visual results demonstrate that the model successfully captures the overall anatomical structure and intensity patterns of the pelvic MRI slices. However, some fine-grained details are smoothed out in the reconstructions. This is attributable to the quantized latent space having dimensions of 64×32, which after accounting for the two stride-2 convolutions means the original 256×128 image is represented by discrete codes at 64×32 spatial resolution. Each discrete code effectively represents a 4×4 pixel region in the original image. While this compression ratio enables efficient representation learning, it inherently limits the preservation of high-frequency spatial details.
+The visual results demonstrate that the model successfully captures the overall anatomical structure and intensity patterns of the pelvic MRI slices. However, some fine-grained details are smoothed out in the reconstructions. This is attributable to the quantised latent space having dimensions of 64×32, which after accounting for the two stride-2 convolutions means the original 256×128 image is represented by discrete codes at 64×32 spatial resolution. Each discrete code effectively represents a 4×4 pixel region in the original image. While this compression ratio enables efficient representation learning, it inherently limits the preservation of high-frequency spatial details.
 
 ### Performance Range on Test Set
 
@@ -304,21 +305,21 @@ Analysis of the test set revealed:
 
 ### Current Limitations
 
-1. **Spatial Resolution of Latent Space**: The 64×32 quantized latent space creates a compression bottleneck where each discrete code represents a 4×4 pixel patch in the original image. While this enables efficient discrete representation, it limits the model's ability to preserve fine anatomical details and sharp tissue boundaries.
+1. **Spatial Resolution of Latent Space**: The 64×32 quantised latent space creates a compression bottleneck where each discrete code represents a 4×4 pixel patch in the original image. While this enables efficient discrete representation, it limits the model's ability to preserve fine anatomical details and sharp tissue boundaries.
 
 2. **Loss Function Scope**: The current implementation relies solely on MSE for reconstruction, which measures pixel-wise differences but doesn't capture perceptual similarity. This can lead to blurry reconstructions even when SSIM is relatively high.
 
 3. **Limited Architectural Depth**: The current encoder and decoder use only two convolutional layers each (with residual connections). Deeper architectures might learn more hierarchical representations of the anatomical structures.
 
-4. **Single-Scale Quantization**: The model uses a single level of quantization, which must balance capturing both coarse structural information and fine details with the same set of codes.
+4. **Single-Scale Quantisation**: The model uses a single level of quantisation, which must balance capturing both coarse structural information and fine details with the same set of codes.
 
 ### Proposed Improvements
 
-- **Increased Latent Resolution**: Implementing a 128×64 quantized latent space (by using stride-1 in one layer) would allow each code to represent 2×2 pixel regions, potentially preserving more fine-grained details while maintaining discrete representations.
+- **Increased Latent Resolution**: Implementing a 128×64 quantised latent space (by using stride-1 in one layer) would allow each code to represent 2×2 pixel regions, potentially preserving more fine-grained details while maintaining discrete representations.
 
-- **Perceptual Loss Integration**: Incorporating perceptual loss functions (e.g., features from pre-trained networks) could improve the visual quality and sharpness of reconstructions beyond what MSE optimization provides.
+- **Perceptual Loss Integration**: Incorporating perceptual loss functions (e.g., features from pre-trained networks) could improve the visual quality and sharpness of reconstructions beyond what MSE optimisation provides.
 
-- **Hierarchical VQ-VAE**: Using multiple levels of vector quantization at different scales could capture both coarse anatomical structure (e.g., bone positions) and fine details (e.g., tissue textures) with separate codebooks.
+- **Hierarchical VQ-VAE**: Using multiple levels of vector quantisation at different scales could capture both coarse anatomical structure (e.g., bone positions) and fine details (e.g., tissue textures) with separate codebooks.
 
 - **Extended Training with Scheduling**: While SSIM began plateauing around epoch 70-80, implementing learning rate decay and training for 150-200 epochs might yield marginal improvements.
 
@@ -342,7 +343,7 @@ Install the following Python packages:
 | torchaudio   | 2.5.1   | Audio processing (dependency)                |
 | torchmetrics | 1.5.1   | SSIM and other evaluation metrics            |
 | numpy        | 1.26.4  | Numerical operations                         |
-| matplotlib   | 3.9.2   | Visualization and plotting                   |
+| matplotlib   | 3.9.2   | Visualisation and plotting                   |
 | nibabel      | 5.3.2   | NIfTI medical image file I/O                 |
 | tqdm         | 4.66.6  | Progress bars                                |
 
@@ -358,7 +359,7 @@ This will train the VQ-VAE model using the configuration specified in `config.py
 ```bash
 python predict.py
 ```
-This loads the best saved model and evaluates it on the test set, generating reconstruction visualizations and computing metrics.
+This loads the best saved model and evaluates it on the test set, generating reconstruction visualisations and computing metrics.
 
 **Note**: Ensure that the data paths in `dataset.py` point to the correct location of the CSIRO HipMRI dataset files.
 
@@ -366,9 +367,9 @@ This loads the best saved model and evaluates it on the test set, generating rec
 
 This project successfully implemented a VQ-VAE model for medical image reconstruction, achieving a test SSIM of 0.789, which significantly exceeds the target performance of 0.6. The model demonstrates strong capability in learning compressed discrete representations of pelvic MRI slices and reconstructing anatomically plausible images.
 
-The training curves indicate stable learning dynamics with good generalization—validation metrics closely tracked training metrics without significant overfitting. The discrete latent space with 512 codebook embeddings proved sufficient for capturing the diversity of anatomical patterns in the dataset.
+The training curves indicate stable learning dynamics with good generalisation—validation metrics closely tracked training metrics without significant overfitting. The discrete latent space with 512 codebook embeddings proved sufficient for capturing the diversity of anatomical patterns in the dataset.
 
-While the reconstructions successfully preserve overall anatomical structure and intensity distributions, the 8×8 latent resolution creates a bottleneck that limits fine detail preservation. The observed SSIM plateau around 0.78-0.80 suggests this represents an approximate performance ceiling for the current architecture. Further improvements would likely require architectural modifications such as increasing the latent resolution or incorporating hierarchical quantization, rather than simply extending training duration.
+While the reconstructions successfully preserve overall anatomical structure and intensity distributions, the 8×8 latent resolution creates a bottleneck that limits fine detail preservation. The observed SSIM plateau around 0.78-0.80 suggests this represents an approximate performance ceiling for the current architecture. Further improvements would likely require architectural modifications such as increasing the latent resolution or incorporating hierarchical quantisation, rather than simply extending training duration.
 
 The project demonstrates the viability of discrete latent variable models for medical imaging applications and provides a foundation for future work exploring more sophisticated VQ-VAE variants or downstream tasks such as image generation from learned codebooks.
 
